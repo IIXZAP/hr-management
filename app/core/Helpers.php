@@ -44,7 +44,37 @@ function crsf_verify()
 
 function require_method_post()
 {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {   
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         redirect('/employees');
     }
+}
+
+function can($module, $action)
+{
+    return Auth::can($module, $action);
+}
+
+function formatWorkDuration($checkIn, $checkOut)
+{
+    if (empty($checkIn) || empty($checkOut)) {
+        return '-';
+    }
+
+    $seconds = strtotime($checkOut) - strtotime($checkIn);
+
+    if ($seconds <= 0) {
+        return '-';
+    }
+    $hours = intdiv($seconds, 3600);
+    $minutes = intdiv($seconds % 3600, 60);
+
+    $parts = [];
+    if ($hours > 0) {
+        $parts[] = $hours . ' ชม.';
+    }
+    if ($minutes >= 0 || $hours === 0) {
+        $parts[] = $minutes . ' นาที';
+    }
+
+    return implode(' ', $parts);
 }

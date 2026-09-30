@@ -8,7 +8,7 @@ class AuthController
             redirect('/dashboard');
         }
 
-        require BASE_PATH . '/views/auth/login.php';
+        require BASE_PATH . '/views/shared/auth/login.php';
     } 
 
     // Login

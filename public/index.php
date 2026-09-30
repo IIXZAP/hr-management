@@ -2,8 +2,8 @@
 // public/index.php
 // entry point เดียว รับทุก request แล้วส่งเข้า Router
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// error_reporting(E_ALL);
 
 session_start();
 define('BASE_PATH', __DIR__ . '/../app');
@@ -23,12 +23,14 @@ require_once BASE_PATH . '/models/Attendance.php';
 // require_once BASE_PATH . '/models/Payroll.php';
 require_once BASE_PATH . '/models/Position.php';
 require_once BASE_PATH . '/models/Documents.php';
+require_once BASE_PATH . '/models/DocumentType.php';
 require_once BASE_PATH . '/models/Contract.php';
 require_once BASE_PATH . '/models/RfidTag.php';
 require_once BASE_PATH . '/models/ScanLog.php';
 require_once BASE_PATH . '/models/Leave.php';
 require_once BASE_PATH . '/models/LeaveType.php';
 require_once BASE_PATH . '/models/LeaveReport.php';
+require_once BASE_PATH . '/models/Role.php';
 
 // ---- โหลด controllers ----
 require_once BASE_PATH . '/controllers/AuthController.php';
@@ -40,6 +42,8 @@ require_once BASE_PATH . '/controllers/AttendanceController.php';
 require_once BASE_PATH . '/controllers/DocumentController.php';
 require_once BASE_PATH . '/controllers/ScanController.php';
 require_once BASE_PATH . '/controllers/LeaveReportController.php';
+require_once BASE_PATH . '/controllers/RoleController.php';
+require_once BASE_PATH . '/controllers/SettingsController.php';
 
 // ---- ประกาศ route ----
 $router = new Router();
@@ -79,6 +83,7 @@ $router->add('/attendance/create', 'AttendanceController', 'create');
 $router->add('/attendance/store', 'AttendanceController', 'store');
 $router->add('/attendance/update', 'AttendanceController', 'update');
 $router->add('/attendance/approve', 'AttendanceController', 'approve');
+$router->add('/attendance/list', 'AttendanceController', 'index');
 // $router->add('/attendance/report', 'AttendanceController', 'approve');
 
 
@@ -89,10 +94,26 @@ $router->add('/attendance/approve', 'AttendanceController', 'approve');
 
 $router->add('/documents', 'DocumentController', 'index');
 $router->add('/documents/store', 'DocumentController', 'store');
+$router->add('/documents/view', 'DocumentController', 'view');
 $router->add('/documents/approve', 'DocumentController', 'approve');
 $router->add('/documents/delete', 'DocumentController', 'delete');
 
 $router->add('/scan', 'ScanController', 'scan');
+
+$router->add('/roles', 'RoleController', 'index');
+$router->add('/roles/permissions', 'RoleController', 'permissions');
+$router->add('/roles/permissions/update', 'RoleController', 'updatePermissions');
+
+$router->add('/settings', 'SettingsController', 'index');
+$router->add('/settings/positions', 'SettingsController', 'positions');
+$router->add('/settings/positions/store', 'SettingsController', 'positionsStore');
+$router->add('/settings/positions/delete', 'SettingsController', 'positionsDelete');
+$router->add('/settings/leave-types', 'SettingsController', 'leaveTypes');
+$router->add('/settings/leave-types/store', 'SettingsController', 'leaveTypesStore');
+$router->add('/settings/leave-types/delete', 'SettingsController', 'leaveTypesDelete');
+$router->add('/settings/document-types', 'SettingsController', 'documentTypes');
+$router->add('/settings/document-types/store', 'SettingsController', 'documentTypesStore');
+$router->add('/settings/document-types/delete', 'SettingsController', 'documentTypesDelete');
 
 // ---- ทำงาน ----
 $router->dispatch();

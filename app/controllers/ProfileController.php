@@ -1,6 +1,6 @@
 <?php
 
-class ProfileController 
+class ProfileController
 {
     public function show()
     {
@@ -14,14 +14,22 @@ class ProfileController
 
         $employee = Employee::find(Auth::empId());
         $contract = Contract::findByEmpId(Auth::empId());
+        $position = Position::find($contract['cont_position']);
+        $contact = EmployeeContact::findByEmpId(Auth::empId());
+        $login = EmployeeLogin::findByEmpId(Auth::empId());
+        $role = Role::find($login['role_id']);
 
         if ($employee === null) {
             echo 'ไม่พบข้อมูลพนักงาน';
             return;
         }
 
-        require BASE_PATH . '/views/layouts/header.php';
-        require BASE_PATH . '/views/profile/show.php';
-        require BASE_PATH . '/views/layouts/footer.php';
+        // var_dump($contract);
+        // var_dump($position);
+        // exit;
+
+        require BASE_PATH . '/views/shared/layouts/header.php';
+        require BASE_PATH . '/views/staff/profile/show.php';
+        require BASE_PATH . '/views/shared/layouts/footer.php';
     }
 }

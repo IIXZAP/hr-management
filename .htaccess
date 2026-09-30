@@ -1,0 +1,3 @@
+<FilesMatch "^\.env|\.(sql|log|md|json|lock)$">
+    Require all denied
+</FilesMatch>

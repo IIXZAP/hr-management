@@ -11,14 +11,18 @@ class LeaveController
         $isAdmin = Auth::isAdmin();
 
         if ($isAdmin === true) {
-            $leaves = Leave::all();
+            // admin เห็นวันลาของทุกคน + ใช้ view ของตัวเอง
+            $leaves   = Leave::all();
+            $viewPath = '/views/admin/leave/list.php';
         } else {
-            $leaves = Leave::allByEmployee(Auth::empId());
+            // staff/assist เห็นแค่วันลาของตัวเอง + ใช้ view ของตัวเอง (แยกไฟล์กับ admin)
+            $leaves   = Leave::allByEmployee(Auth::empId());
+            $viewPath = '/views/staff/leave/report.php';
         }
 
-        require BASE_PATH . '/views/layouts/header.php';
-        require BASE_PATH . '/views/leave/list.php';
-        require BASE_PATH . '/views/layouts/footer.php';
+        require BASE_PATH . '/views/shared/layouts/header.php';
+        require BASE_PATH . $viewPath;
+        require BASE_PATH . '/views/shared/layouts/footer.php';
     }
 
     // create
@@ -30,10 +34,12 @@ class LeaveController
         }
 
         $leaveTypes = LeaveType::all();
+        $isAdmin = Auth::isAdmin();
+        $employees = $isAdmin ? Employee::all('', '') : [];
 
-        require BASE_PATH . '/views/layouts/header.php';
-        require BASE_PATH . '/views/leave/create.php';
-        require BASE_PATH . '/views/layouts/footer.php';
+        require BASE_PATH . '/views/shared/layouts/header.php';
+        require BASE_PATH . '/views/admin/leave/create.php';
+        require BASE_PATH . '/views/shared/layouts/footer.php';
     }
 
 
@@ -50,7 +56,7 @@ class LeaveController
 
         $leaveId = $_POST['leave_id'] ?? null;
         $action  = $_POST['action'] ?? ''; // 'approve' หรือ 'reject' จากปุ่มในฟอร์ม
- 
+
         $status = ($action === 'approve') ? 'approved' : 'rejected';
 
         Leave::updateStatus($leaveId, $status);
@@ -65,6 +71,15 @@ class LeaveController
         }
 
         $empId = Auth::empId();
+
+        if (Auth::isAdmin() && !empty($_POST['emp_id'])) {
+            $empId = (int) $_POST['emp_id'];
+
+            if (Employee::find($empId) === null) {
+                echo 'ไม่พบพนักงาน';
+                return;
+            }
+        }
 
         $data = [
             'emp_id' => $empId,
@@ -91,7 +106,7 @@ class LeaveController
         $leave = Leave::find($leaveId);
 
         $isOwner = ((int) $leave['emp_id'] === (int) Auth::empId());
- 
+
         if ($isOwner === false && Auth::isAdmin() === false) {
             redirect('/leave');
         }
@@ -104,5 +119,4 @@ class LeaveController
 
         redirect('/leave');
     }
-
 }

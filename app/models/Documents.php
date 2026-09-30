@@ -14,7 +14,7 @@ class Document
         return $result;
     }
 
-   
+
 
     public static function find($docId)
     {
@@ -38,15 +38,16 @@ class Document
         $conn = Database::connect();
 
         $sql = "INSERT INTO documents
-                (emp_id, doc_url, type_id, doc_status, created_at, updated_at)
+                (emp_id, doc_url, type_id, doc_name, doc_status, created_at, updated_at)
                 VALUES
-                (:emp_id, :doc_url, :type_id, :doc_status, NOW(), NOW())";
+                (:emp_id, :doc_url, :type_id, :doc_name, :doc_status, NOW(), NOW())";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             ':emp_id'     => $data['emp_id'],
             ':doc_url'    => $data['doc_url'],
             ':type_id'    => $data['type_id'],
+            ':doc_name'   => $data['doc_name'],
             ':doc_status' => $data['doc_status'],
         ]);
 
@@ -82,8 +83,7 @@ class Document
 
         // ดึงไฟล์ก่อนลบ
         $doc = self::find($docId);
-        if($doc === null) 
-        {
+        if ($doc === null) {
             return false;
         }
 
@@ -101,5 +101,18 @@ class Document
         return false;
     }
 
-    // public static function update {}
+    // ใช้เฉพาะฝั่ง staff — เห็นแค่เอกสารที่ผ่านการอนุมัติแล้วเท่านั้น
+    public static function approvedByEmployee($empId)
+    {
+        $conn = Database::connect();
+
+        $sql = "SELECT * FROM documents 
+            WHERE emp_id = :emp_id AND doc_status = 'approved'
+            ORDER BY created_at DESC";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([':emp_id' => $empId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

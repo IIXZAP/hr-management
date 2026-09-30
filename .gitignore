@@ -4,3 +4,4 @@ image/
 vendor/
 tests/
 public/uploads
+migration/

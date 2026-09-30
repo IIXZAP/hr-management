@@ -30,9 +30,9 @@ class EmployeeController
 
         $employees = Employee::all($search, $status);
 
-        require BASE_PATH . '/views/layouts/header.php';
-        require BASE_PATH . '/views/employees/list.php';
-        require BASE_PATH . '/views/layouts/footer.php';
+        require BASE_PATH . '/views/shared/layouts/header.php';
+        require BASE_PATH . '/views/admin/employees/list.php';
+        require BASE_PATH . '/views/shared/layouts/footer.php';
     }
 
     public function table()
@@ -47,7 +47,7 @@ class EmployeeController
 
         $employees = Employee::all($search, $status);
 
-        require BASE_PATH . '/views/employees/_table.php';
+        require BASE_PATH . '/views/admin/employees/_table.php';
     }
 
     // แสดง form add employee
@@ -60,9 +60,9 @@ class EmployeeController
         $positions = Position::all();
         $emp_no = Employee::empno();
 
-        require BASE_PATH . '/views/layouts/header.php';
-        require BASE_PATH . '/views/employees/create.php';
-        require BASE_PATH . '/views/layouts/footer.php';
+        require BASE_PATH . '/views/shared/layouts/header.php';
+        require BASE_PATH . '/views/admin/employees/create.php';
+        require BASE_PATH . '/views/shared/layouts/footer.php';
     }
 
     // submit form employee -> $_POST[]
@@ -71,6 +71,13 @@ class EmployeeController
         if (Auth::check() === false) {
             redirect('/login');
         }
+
+        $idcard = preg_replace('/\D/', '', $_POST['emp_idcard'] ?? '');
+        if ($idcard !== '' && strlen($idcard) !== 13) {
+            echo 'เลขบัตรประชาชนต้องมี 13 หลัก';
+            return;
+        }
+        $_POST['emp_idcard'] = $idcard;
 
 
 
@@ -167,9 +174,9 @@ class EmployeeController
         $positions = Position::all();
 
 
-        require BASE_PATH . '/views/layouts/header.php';
-        require BASE_PATH . '/views/employees/view.php';
-        require BASE_PATH . '/views/layouts/footer.php';
+        require BASE_PATH . '/views/shared/layouts/header.php';
+        require BASE_PATH . '/views/admin/employees/view.php';
+        require BASE_PATH . '/views/shared/layouts/footer.php';
     }
 
     // Edit form 
@@ -191,9 +198,9 @@ class EmployeeController
             return;
         }
 
-        require BASE_PATH . '/views/layouts/header.php';
-        require BASE_PATH . '/views/employees/edit.php';
-        require BASE_PATH . '/views/layouts/footer.php';
+        require BASE_PATH . '/views/shared/layouts/header.php';
+        require BASE_PATH . '/views/admin/employees/edit.php';
+        require BASE_PATH . '/views/shared/layouts/footer.php';
     }
 
     // Save / update form
@@ -205,45 +212,51 @@ class EmployeeController
 
         $empId = $_POST['emp_id'] ?? null;
 
+        $idcard = preg_replace('/\D/', '', $_POST['emp_idcard'] ?? '');
+        if ($idcard !== '' && strlen($idcard) !== 13) {
+            echo 'เลขบัตรประชาชนต้องมี 13 หลัก';
+            return;
+        }
+
         $employeeData = [
-            'emp_no' => sanitize($_POST['emp_no'] ?? ''),
-            'emp_prefix_th' => sanitize($_POST['emp_prefix_th'] ?? ''),
-            'emp_name_th' => sanitize($_POST['emp_name_th'] ?? ''),
-            'emp_sname_th' => sanitize($_POST['emp_sname_th'] ?? ''),
-            'emp_nickname_th' => sanitize($_POST['emp_nickname_th'] ?? ''),
-            'emp_prefix_en' => sanitize($_POST['emp_prefix_en'] ?? ''),
-            'emp_name_en' => sanitize($_POST['emp_name_en'] ?? ''),
-            'emp_sname_en' => sanitize($_POST['emp_sname_en'] ?? ''),
-            'emp_nickname_en' => sanitize($_POST['emp_nickname_en'] ?? ''),
-            'emp_idcard' => sanitize($_POST['emp_idcard'] ?? ''),
-            'emp_idss' => sanitize($_POST['emp_idss'] ?? ''),
-            'emp_birthday' => $_POST['emp_birthday'] ?? '',
-            'emp_tel' => sanitize($_POST['emp_tel'] ?? ''),
-            'emp_email' => sanitize($_POST['emp_email'] ?? ''),
-            'emp_address' => sanitize($_POST['emp_address'] ?? ''),
-            'emp_line' => sanitize($_POST['emp_line'] ?? ''),
-            'emp_cancel' => sanitize($_POST['emp_cancel'] ?? ''),
+            'emp_no'            => sanitize($_POST['emp_no'] ?? ''),
+            'emp_prefix_th'     => sanitize($_POST['emp_prefix_th'] ?? ''),
+            'emp_name_th'       => sanitize($_POST['emp_name_th'] ?? ''),
+            'emp_sname_th'      => sanitize($_POST['emp_sname_th'] ?? ''),
+            'emp_nickname_th'   => sanitize($_POST['emp_nickname_th'] ?? ''),
+            'emp_prefix_en'     => sanitize($_POST['emp_prefix_en'] ?? ''),
+            'emp_name_en'       => sanitize($_POST['emp_name_en'] ?? ''),
+            'emp_sname_en'      => sanitize($_POST['emp_sname_en'] ?? ''),
+            'emp_nickname_en'   => sanitize($_POST['emp_nickname_en'] ?? ''),
+            'emp_idcard'        => $idcard,
+            'emp_idss'          => sanitize($_POST['emp_idss'] ?? ''),
+            'emp_birthday'      => $_POST['emp_birthday'] ?? '',
+            'emp_tel'           => sanitize($_POST['emp_tel'] ?? ''),
+            'emp_email'         => sanitize($_POST['emp_email'] ?? ''),
+            'emp_address'       => sanitize($_POST['emp_address'] ?? ''),
+            'emp_line'          => sanitize($_POST['emp_line'] ?? ''),
+            'emp_cancel'        => sanitize($_POST['emp_cancel'] ?? ''),
 
         ];
 
         $contactData = [
-            'emp_id' => sanitize($_POST['emp_id'] ?? ''),
-            'contact_type' => sanitize($_POST['contact_type'] ?? ''),
-            'name' => sanitize($_POST['name'] ?? ''),
-            'relationship' => sanitize($_POST['relationship'] ?? ''),
-            'tel' => sanitize($_POST['tel'] ?? ''),
-            'is_primary' => sanitize($_POST['is_primary'] ?? '1'),
+            'emp_id'            => sanitize($_POST['emp_id'] ?? ''),
+            'contact_type'      => sanitize($_POST['contact_type'] ?? ''),
+            'name'              => sanitize($_POST['name'] ?? ''),
+            'relationship'      => sanitize($_POST['relationship'] ?? ''),
+            'tel'               => sanitize($_POST['tel'] ?? ''),
+            'is_primary'        => sanitize($_POST['is_primary'] ?? '1'),
         ];
 
         $contractData = [
-            'emp_id' => sanitize($_POST['emp_id'] ?? ''),
-            'cont_position' => sanitize($_POST['cont_position'] ?? ''),
-            'cont_start_date' => sanitize($_POST['cont_start_date'] ?? ''),
-            'cont_duration_time' => sanitize($_POST['cont_duration_time'] ?? ''),
-            'cont_status' => sanitize($_POST['cont_status'] ?? ''),
-            'cont_salary' => sanitize($_POST['cont_salary'] ?? ''),
-            'cont_bank' => sanitize($_POST['cont_bank'] ?? ''),
-            'cont_bank_no' => sanitize($_POST['cont_bank_no'] ?? ''),
+            'emp_id'                => sanitize($_POST['emp_id'] ?? ''),
+            'cont_position'         => sanitize($_POST['cont_position'] ?? ''),
+            'cont_start_date'       => sanitize($_POST['cont_start_date'] ?? ''),
+            'cont_duration_time'    => sanitize($_POST['cont_duration_time'] ?? ''),
+            'cont_status'           => sanitize($_POST['cont_status'] ?? ''),
+            'cont_salary'           => sanitize($_POST['cont_salary'] ?? ''),
+            'cont_bank'             => sanitize($_POST['cont_bank'] ?? ''),
+            'cont_bank_no'          => sanitize($_POST['cont_bank_no'] ?? ''),
         ];
 
         $conn = Database::connect();

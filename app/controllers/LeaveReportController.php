@@ -1,7 +1,5 @@
 <?php
 // app/controllers/LeaveReportController.php
-// หน้าที่: หน้ารายงานสรุปวันลา (admin เท่านั้น) — เดินลูปพนักงานทุกคน รวมข้อมูล 3 อย่างต่อคน
-// (ประวัติการลา, ยอดรวมแยกประเภท, สิทธิ์วันลาพักร้อน) ส่งให้ view จัดแท็บเอง
 
 class LeaveReportController
 {
@@ -11,35 +9,53 @@ class LeaveReportController
             redirect('/login');
         }
 
-        if (Auth::isAdmin() === false) {
+        if (Auth::can('leave', 'read') === false) {
             redirect('/profile');
         }
 
+        $isAdmin = Auth::isAdmin();
         $year = (int) ($_GET['year'] ?? date('Y'));
 
-        $employees = LeaveReport::activeEmployees();
+        // จุดที่แก้ — เลือกว่าจะดึงพนักงานกี่คน ตาม role
+        if ($isAdmin) {
+            $employees = LeaveReport::activeEmployees();
+        } else {
+            $employees = LeaveReport::activeEmployees(Auth::empId());
+            // ต้องแก้ activeEmployees() ให้รับ filter ได้ — ดูข้อ 2 ด้านล่าง
+        }
+
         $leaveTypes = LeaveType::all();
 
-        // รวมข้อมูลทุกอย่างต่อคนไว้ล่วงหน้า กัน view ต้อง query ซ้ำในลูป (N+1 query problem)
+        $empIds = array_column($employees, 'emp_id');
+
+        $allHistory  = LeaveReport::historyByYear($empIds, $year);
+        $allTotals   = LeaveReport::totalsByTypeAll($empIds, $year);
+        $allVacation = LeaveReport::vacationEntitlementAll($empIds, $year);
+
         $reportData = [];
         foreach ($employees as $employee) {
             $empId = $employee['emp_id'];
 
             $reportData[$empId] = [
-                'employee'   => $employee,
-                'history'    => LeaveReport::historyByEmployeeYear($empId, $year),
-                'totals'     => LeaveReport::totalsByType($empId, $year),
-                'vacation'   => LeaveReport::vacationEntitlement($empId, $year),
+                'employee' => $employee,
+                'history'  => $allHistory[$empId] ?? [],
+                'totals'   => $allTotals[$empId] ?? [],
+                'vacation' => $allVacation[$empId] ?? null,
             ];
         }
 
-
-
-        // ปีให้เลือกใน dropdown — ย้อนกลับไปถึงปี 2016 ตามของเดิม
         $yearOptions = range((int) date('Y'), 2016);
 
-        require BASE_PATH . '/views/layouts/header.php';
-        require BASE_PATH . '/views/leave/report.php';
-        require BASE_PATH . '/views/layouts/footer.php';
+        // แก้บั๊ก: เดิม require ไฟล์ admin ตายตัว ไม่แยก role เลย
+        // ทั้งที่ $employees / $reportData ด้านบน filter ตาม role ถูกต้องอยู่แล้ว
+        if ($isAdmin === true) {
+            $viewPath = '/views/admin/leave/report.php';
+        } else {
+            $viewPath = '/views/staff/leave/report.php';
+        }
+
+        require BASE_PATH . '/views/shared/layouts/header.php';
+        require BASE_PATH . $viewPath;
+        require BASE_PATH . '/views/shared/layouts/footer.php';
     }
 }

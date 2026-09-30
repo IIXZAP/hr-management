@@ -78,25 +78,25 @@ class Employee
 
         $sql = "INSERT INTO employees (emp_no, emp_prefix_th, emp_name_th, emp_sname_th, emp_nickname_th, emp_prefix_en, emp_name_en, emp_sname_en, emp_nickname_en, emp_idcard, emp_idss, emp_birthday, emp_tel, emp_email, emp_address, emp_line, emp_cancel) VALUES (:emp_no, :emp_prefix_th, :emp_name_th, :emp_sname_th, :emp_nickname_th,
          :emp_prefix_en, :emp_name_en, :emp_sname_en, :emp_nickname_en,
-         :emp_idcard, :emp_birthday, :emp_tel, :emp_email, :emp_address, :emp_line, :emp_cancel)";
+         :emp_idcard, :emp_idss, :emp_birthday, :emp_tel, :emp_email, :emp_address, :emp_line, :emp_cancel)";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             ':emp_no' => $data['emp_no'],
-            ':emp_prefix_th' => $data['emp_prefix_th'],
-            ':emp_name_th' => $data['emp_name_th'],
-            ':emp_sname_th' => $data['emp_sname_th'],
-            ':emp_nickname_th' => $data['emp_nickname_th'],
-            ':emp_prefix_en' => $data['emp_prefix_en'],
-            ':emp_name_en' => $data['emp_name_en'],
-            ':emp_sname_en' => $data['emp_sname_en'],
-            ':emp_nickname_en' => $data['emp_nickname_en'],
-            ':emp_idcard' => $data['emp_idcard'],
-            ':emp_idss' => $data['emp_idss'],
-            ':emp_birthday' => $data['emp_birthday'],
-            ':emp_tel' => $data['emp_tel'],
-            ':emp_email' => $data['emp_email'],
-            ':emp_address' => $data['emp_address'],
-            ':emp_line' => $data['emp_line'],
+            ':emp_prefix_th' => $data['emp_prefix_th'] ?? '',
+            ':emp_name_th' => $data['emp_name_th'] ?? '',
+            ':emp_sname_th' => $data['emp_sname_th'] ?? '',
+            ':emp_nickname_th' => $data['emp_nickname_th'] ?? '',
+            ':emp_prefix_en' => $data['emp_prefix_en'] ?? '',
+            ':emp_name_en' => $data['emp_name_en'] ?? '',
+            ':emp_sname_en' => $data['emp_sname_en'] ?? '',
+            ':emp_nickname_en' => $data['emp_nickname_en'] ?? '',
+            ':emp_idcard' => $data['emp_idcard'] ?? '',
+            ':emp_idss' => $data['emp_idss'] ?? '',
+            ':emp_birthday' => $data['emp_birthday'] ?? '',
+            ':emp_tel' => $data['emp_tel'] ?? '',
+            ':emp_email' => $data['emp_email'] ?? '',
+            ':emp_address' => $data['emp_address'] ?? '',
+            ':emp_line' => $data['emp_line'] ?? '',
             ':emp_cancel' => 1,
         ]);
 

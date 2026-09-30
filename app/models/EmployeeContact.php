@@ -30,11 +30,11 @@ class EmployeeContact
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             ':emp_id' => $empId,
-            ':contact_type' => $data['contact_type'],
-            ':name' => $data['name'],
-            ':relationship' => $data['relationship'],
-            ':tel' => $data['tel'],
-            ':is_primary' => $data['is_primary'],
+            ':contact_type' => $data['contact_type'] ?? '',
+            ':name' => $data['name'] ?? '',
+            ':relationship' => $data['relationship'] ?? '',
+            ':tel' => $data['tel'] ?? '',
+            ':is_primary' => $data['is_primary'] ?? '',
         ]);
 
         return $conn->lastInsertId();

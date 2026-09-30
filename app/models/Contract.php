@@ -35,13 +35,13 @@ class Contract
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             ':emp_id'           => $empId,
-            ':cont_position'     => $data['cont_position'],
-            ':cont_start_date'   => $data['cont_start_date'],
-            ':cont_duration_time' => $data['cont_duration_time'],
-            ':cont_status'       => $data['cont_status'],
-            ':cont_salary'       => $data['cont_salary'],
-            ':cont_bank'         => $data['cont_bank'],
-            ':cont_bank_no'      => $data['cont_bank_no'],
+            ':cont_position'     => $data['cont_position'] ?? '',
+            ':cont_start_date'   => $data['cont_start_date'] ?? '',
+            ':cont_duration_time' => $data['cont_duration_time'] ?? '',
+            ':cont_status'       => $data['cont_status'] ?? '',
+            ':cont_salary'       => $data['cont_salary'] ?? '',
+            ':cont_bank'         => $data['cont_bank'] ?? '',
+            ':cont_bank_no'      => $data['cont_bank_no'] ?? '',
         ]);
 
         return true;

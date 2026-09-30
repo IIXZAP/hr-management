@@ -9,7 +9,7 @@ class Leave
     {
         $conn = Database::connect();
 
-        $sql = "SELECT tl.* , lts.leave_types_name 
+        $sql = "SELECT tl.* , lts.leave_type_name 
                 FROM time_leave tl
                 LEFT JOIN leave_types lts  
                     ON lts.leave_type_id = tl.leave_type_id
@@ -132,5 +132,58 @@ class Leave
         $result = $stmt->fetch();
 
         return (int) $result['totalLeave'];
+    }
+    public static function recentByEmployee($empId, $limit = 5)
+    {
+        $conn = Database::connect();
+        $stmt = $conn->prepare(
+            "SELECT t.leave_date, t.leave_days, t.leave_status, lt.leave_type_name
+             FROM time_leave t
+             JOIN leave_types lt ON lt.leave_type_id = t.leave_type_id
+             WHERE t.emp_id = :emp_id
+             ORDER BY t.leave_date DESC
+             LIMIT " . (int) $limit
+        );
+        $stmt->execute([':emp_id' => $empId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // วันลาคงเหลือของประเภทที่ระบุ (ปีปฏิทินปัจจุบัน)
+    // คืน null ถ้าประเภทนั้นไม่จำกัดวัน/ไม่พบประเภท
+    // วันลาคงเหลือของประเภทที่ระบุ (ปีปฏิทินปัจจุบัน)
+    // สิทธิ์วันลาคำนวณจากอายุงาน: <1 ปี = 0, ครบ 1 ปี = 5, ครบปีถัดไป +1
+    // คืน null ถ้าไม่พบสัญญาของพนักงาน
+    public static function balance($empId, $leaveTypeId)
+    {
+        $contract = Contract::findByEmpId($empId);
+
+        if ($contract === null || empty($contract['cont_start_date'])) {
+            return null;
+        }
+
+        $startDate = new DateTime($contract['cont_start_date']);
+        $today = new DateTime();
+        $yearsOfService = (int) $startDate->diff($today)->y;
+
+        if ($yearsOfService < 1) {
+            $entitled = 0;
+        } else {
+            $entitled = 5 + ($yearsOfService - 1);
+        }
+
+        $conn = Database::connect();
+        $stmt = $conn->prepare(
+            "SELECT COALESCE(SUM(leave_days), 0)
+             FROM time_leave
+             WHERE emp_id = :emp_id
+               AND leave_type_id = :type_id
+               AND leave_status = 'approved'
+               AND YEAR(leave_date) = YEAR(CURDATE())"
+        );
+        $stmt->execute([':emp_id' => $empId, ':type_id' => $leaveTypeId]);
+        $used = (float) $stmt->fetchColumn();
+
+        return max(0, (float) $entitled - $used);
     }
 }

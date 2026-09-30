@@ -37,15 +37,15 @@ class EmployeeLogin
         $isAdmin = (($data['user_level'] ?? 'staff') === 'admin') ? 1 : 0;
         $roleId  = $isAdmin ? ($data['role_id'] ?? null) : null;
 
-        $sql = "INSERT INTO employee_login (emp_id, username, password_hash, is_admin, role_id)
-                VALUES (:emp_id, :username, :password_hash, :is_admin, :role_id)";
+        $sql = "INSERT INTO employee_login (emp_id, username, password_hash, role_id)
+                VALUES (:emp_id, :username, :password_hash, :role_id)";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             ':emp_id'        => $empId,
             ':username'      => $data['username'],
             ':password_hash' => password_hash($data['password'], PASSWORD_DEFAULT),
-            ':is_admin'      => $isAdmin,
+            // ':is_admin'      => $isAdmin,
             ':role_id'       => $roleId,
         ]);
 
@@ -66,14 +66,14 @@ class EmployeeLogin
 
         $sql = "UPDATE employee_login
                 SET username = :username,
-                    is_admin = :is_admin,
+                    -- is_admin = :is_admin,
                     role_id = :role_id
                 WHERE emp_id = :emp_id";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             ':username' => $data['username'],
-            ':is_admin' => $isAdmin,
+            // ':is_admin' => $isAdmin,
             ':role_id'  => $roleId,
             ':emp_id'   => $empId,
         ]);

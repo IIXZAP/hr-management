@@ -21,9 +21,9 @@ class Router
         // Check 
         if(isset($this->routes[$currentPath]) === false) {
             http_response_code(404);
-            require BASE_PATH . '/views/layouts/header.php';
-            require BASE_PATH . '/views/errors/404.php';
-            require BASE_PATH . '/views/layouts/footer.php';
+            require BASE_PATH . '/views/shared/layouts/header.php';
+            require BASE_PATH . '/views/shared/errors/404.php';
+            require BASE_PATH . '/views/shared/layouts/footer.php';
             
             return;
         }
