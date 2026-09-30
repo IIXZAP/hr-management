@@ -273,7 +273,8 @@ $docStatusBadge = [
 <script>
     function selectEmployee(empId) {
         // ไม่เลือกพนักงาน -> กลับหน้าเปล่า (เดิมไปที่ ?emp_id= ว่าง)
-        window.location.href = empId ? '?emp_id=' + encodeURIComponent(empId) : window.location.pathname;
+        const base = '<?= url('/documents') ?>';
+        window.location.href = empId ? base + (base.includes('?') ? '&' : '?') + 'emp_id=' + encodeURIComponent(empId) : base;
     }
 
     function setDeleteDoc(btn) {

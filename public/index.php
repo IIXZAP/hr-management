@@ -8,6 +8,10 @@
 session_start();
 define('BASE_PATH', __DIR__ . '/../app');
 
+// server ที่ไม่มี URL rewrite ใช้ /index.php?r=login แทน /login (localhost: php -S ใช้ path ปกติ)
+// บังคับได้ด้วย env QUERY_ROUTES=1 / 0
+define('USE_QUERY_ROUTES', getenv('QUERY_ROUTES') !== false ? getenv('QUERY_ROUTES') === '1' : PHP_SAPI !== 'cli-server');
+
 // ---- โหลด core ----
 require_once BASE_PATH . '/core/Helpers.php';
 require_once BASE_PATH . '/core/Database.php';
@@ -116,4 +120,9 @@ $router->add('/settings/document-types/store', 'SettingsController', 'documentTy
 $router->add('/settings/document-types/delete', 'SettingsController', 'documentTypesDelete');
 
 // ---- ทำงาน ----
+if (USE_QUERY_ROUTES) {
+    route_paths($router->paths());
+    ob_start('rewrite_routes_in_html');
+}
+
 $router->dispatch();

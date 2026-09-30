@@ -436,7 +436,8 @@ $i = 1;
         if (searchInput.value) params.set('search', searchInput.value);
         if (statusInput.value !== '') params.set('status', statusInput.value);
 
-        const newUrl = '/employees' + (params.toString() ? '?' + params.toString() : '');
+        const employeesUrl = '<?= url('/employees') ?>';
+        const newUrl = employeesUrl + (params.toString() ? (employeesUrl.includes('?') ? '&' : '?') + params.toString() : '');
         history.pushState({}, '', newUrl);
 
         loadingIndicator.classList.remove('hidden');

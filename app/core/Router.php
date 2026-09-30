@@ -13,10 +13,25 @@ class Router
         ];
    }
 
+   // path ทั้งหมดที่ลงทะเบียนไว้ (ใช้ตอน rewrite ลิงก์ในโหมด query)
+   public function paths()
+   {
+        return array_keys($this->routes);
+   }
+
    public function dispatch()
    {
-        // $currentPath = $_SERVER['REQUEST_URI'];
-        $currentPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        // โหมด query (?r=login) ใช้บน server ที่ไม่มี rewrite, โหมด path (/login) ใช้บน localhost
+        if (isset($_GET['r']) && is_string($_GET['r'])) {
+            $currentPath = '/' . trim($_GET['r'], '/');
+        } else {
+            $currentPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+            // เข้าหน้าแรก (/ หรือ /index.php) ส่งไปหน้าที่เหมาะสม
+            if ($currentPath === '/' || $currentPath === '/index.php') {
+                redirect(Auth::check() ? '/dashboard' : '/login');
+            }
+        }
 
         // Check 
         if(isset($this->routes[$currentPath]) === false) {
