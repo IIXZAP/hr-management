@@ -15,7 +15,7 @@
 // หัวข้อกลุ่มค้างโผล่มาให้เห็นอยู่ (ตามภาพที่เจอปัญหา) เพิ่ม class sidebar-label ให้ครบทุกจุด
 $isAdmin = Auth::isAdmin();
 
-$currentPage = basename($_SERVER['PHP_SELF']);
+$currentPage = basename(isset($_GET['r']) && is_string($_GET['r']) ? $_GET['r'] : $_SERVER['PHP_SELF']);
 ?>
 
 <aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-[width,transform] duration-300 ease-in-out -translate-x-full sm:translate-x-0" aria-label="Sidebar">

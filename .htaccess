@@ -1,3 +1,8 @@
 <FilesMatch "^\.env|\.(sql|log|md|json|lock)$">
     Require all denied
 </FilesMatch>
+
+Options -Indexes
+RewriteEngine On
+RewriteRule ^rwcheck$ /index.php [R=302,L]
+FallbackResource /index.php

@@ -36,7 +36,6 @@ class AuthController
     public function logout()
     {
         Auth::logout();
-        header('Location: /login');
-        exit;
+        redirect('/login');
     } 
 }
