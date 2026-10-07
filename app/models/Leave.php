@@ -133,6 +133,36 @@ class Leave
 
         return (int) $result['totalLeave'];
     }
+
+    // จำนวนคำขอลาที่รออนุมัติทั้งหมด (admin dashboard)
+    public static function countPending()
+    {
+        $conn = Database::connect();
+
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM time_leave WHERE leave_status = 'pending'");
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    // คำขอลาล่าสุดของทุกคน (admin dashboard)
+    public static function recentAll($limit = 5)
+    {
+        $conn = Database::connect();
+        $stmt = $conn->prepare(
+            "SELECT t.leave_date, t.leave_days, t.leave_status, lt.leave_type_name,
+                    e.emp_name_th, e.emp_sname_th
+             FROM time_leave t
+             JOIN leave_types lt ON lt.leave_type_id = t.leave_type_id
+             JOIN employees e ON e.emp_id = t.emp_id
+             ORDER BY t.created_at DESC, t.leave_id DESC
+             LIMIT " . (int) $limit
+        );
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public static function recentByEmployee($empId, $limit = 5)
     {
         $conn = Database::connect();

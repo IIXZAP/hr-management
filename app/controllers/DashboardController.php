@@ -10,6 +10,36 @@ class DashboardController
 
         if (Auth::isAdmin()) {
             $view = '/views/admin/dashboard/index.php';
+
+            $employee = Employee::find(Auth::empId());
+
+            $totalEmployees = Employee::countAll();
+            $pendingLeaves  = Leave::countPending();
+            $todayAttendance = Attendance::countAttendance();
+
+            $recentLeaves = [];
+            foreach (Leave::recentAll(5) as $row) {
+                $days = (float) $row['leave_days'];
+                $recentLeaves[] = [
+                    'employee'   => trim($row['emp_name_th'] . ' ' . $row['emp_sname_th']),
+                    'type'       => $row['leave_type_name'],
+                    'date_range' => $this->thaiDate($row['leave_date']),
+                    'days'       => rtrim(rtrim(number_format($days, 1), '0'), '.') . ' วัน',
+                    'status'     => $row['leave_status'],
+                ];
+            }
+
+            $pendingDocsCount = Document::countPending();
+            $recentDocs = [];
+            foreach (Document::recentPending(2) as $row) {
+                $ts = strtotime($row['created_at']);
+                $recentDocs[] = [
+                    'label'   => $row['doc_name'] ?: ($row['type_name'] ?? 'เอกสาร'),
+                    'meta'    => trim($row['emp_name_th'] . ' ' . $row['emp_sname_th']) . ' • ' . ($row['type_name'] ?? 'อื่นๆ'),
+                    'time'    => $ts ? $this->thaiDate($row['created_at']) . ' ' . date('H:i', $ts) . ' น.' : '-',
+                    'doc_url' => '/documents/view?doc_id=' . (int) $row['doc_id'],
+                ];
+            }
         } else {
             $view = '/views/staff/dashboard/index.php';
 
