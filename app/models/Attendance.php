@@ -97,17 +97,26 @@ class Attendance
         //         ON em.emp_id = rt.emp_id
         //     WHERE em.emp_cancel = 1";
 
-        $sql = "WITH RECURSIVE date_range AS (
-                    SELECT :start AS d
-                    UNION ALL
-                    SELECT d + INTERVAL 1 DAY FROM date_range WHERE d < :end
-                )
-                SELECT em.emp_id, em.emp_no, em.emp_name_th, em.emp_sname_th,
+        // สร้างรายการวันที่ใน PHP แทน WITH RECURSIVE (รองรับ MySQL < 8.0 / MariaDB < 10.2)
+        $dateSelects = [];
+        $params = [];
+        $current = strtotime($start);
+        $last = strtotime($end);
+        if ($current === false || $last === false || $current > $last) {
+            $current = $last = strtotime(date('Y-m-d'));
+        }
+        for ($i = 0; $current <= $last; $i++, $current = strtotime('+1 day', $current)) {
+            $dateSelects[] = "SELECT :d{$i} AS d";
+            $params[":d{$i}"] = date('Y-m-d', $current);
+        }
+        $dateRangeSql = implode(' UNION ALL ', $dateSelects);
+
+        $sql = "SELECT em.emp_id, em.emp_no, em.emp_name_th, em.emp_sname_th,
                        dr.d AS work_date,
                        att.att_id, att.check_in, att.check_out,
                        tl.leave_id, tl.leave_date, tl.leave_type_id,
                        lt.leave_type_name, rt.start_time
-                FROM date_range dr
+                FROM ($dateRangeSql) dr
                 CROSS JOIN employees em
                 LEFT JOIN attendance att
                     ON att.emp_id = em.emp_id AND att.work_date = dr.d
