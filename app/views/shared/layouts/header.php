@@ -9,7 +9,7 @@ $currentUser = Auth::user();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HR Center</title>
+    <title>KTn System</title>
     <link rel="icon" type="image/x-icon" href="/assets/images/logo_ktn.webp">
     <link rel="stylesheet" href="/dist/flowbite.min.css">
     <link rel="stylesheet" href="/dist/output.css">

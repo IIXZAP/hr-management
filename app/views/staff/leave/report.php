@@ -45,7 +45,7 @@ $employees = $employees ?? [];
                 <div class="flex items-center gap-2 flex-wrap">
                     <input type="month" id="filterMonth"
                         value="<?= htmlspecialchars($_GET['month'] ?? date('Y-m')) ?>"
-                        onchange="location.href = '/attendance/list?month=' + this.value"
+                        onchange="location.href = '/leave/report?month=' + this.value"
                         class="text-sm border border-default-medium rounded-base px-3 py-2 bg-neutral-secondary-medium text-heading focus:ring-brand focus:border-brand">
                     <!-- <select id="filterStatus" onchange="filterHistoryByStatus(this.value)"
                     class="text-sm border border-default-medium rounded-base px-3 py-2 bg-neutral-secondary-medium text-heading">

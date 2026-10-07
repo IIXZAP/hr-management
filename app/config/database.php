@@ -2,8 +2,8 @@
 
 $dbHost = $_ENV['DB_HOST'] ?? 'localhost';
 $dbName = $_ENV['DB_NAME'] ?? 'dev_system';
-$dbUser = $_ENV['DB_USER'] ?? 'root';
-$dbPass = $_ENV['DB_PASS'] ?? '';
+$dbUser = $_ENV['DB_USER'] ?? 'dev_system';
+$dbPass = $_ENV['DB_PASS'] ?? 'Asdfghjkl1';
 $dbCharset = 'utf8mb4';
 
 $databaseConfig = [

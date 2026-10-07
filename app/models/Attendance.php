@@ -1,3 +1,4 @@
+<!-- app/models/Attendance.php -->
 <?php
 
 class Attendance
@@ -57,57 +58,50 @@ class Attendance
             $end = $start;
         }
 
-        $params = [
-            ':start' => $start,
-            ':end'   => $end,
-        ];
+        // validate รูปแบบวันที่ (Server-side)
+        $startObj = DateTime::createFromFormat('Y-m-d', $start);
+        $endObj   = DateTime::createFromFormat('Y-m-d', $end);
 
-        if ($start === '' && $end === '') {
-            $dateConditionAtt = "att.work_date = CURDATE()";
-            $dateConditionLeave = "tl.leave_date = CURDATE()";
-        } else {
-            $conditions = [];
-            $leaveConditions = [];
-            if ($start !== '') {
-                $conditions[] = "att.work_date >= :start";
-                $leaveConditions[] = "tl.leave_date >= :start";
-                $params[':start'] = $start;
-            }
-            if ($end !== '') {
-                $conditions[] = "att.work_date <= :end";
-                $leaveConditions[] = "tl.leave_date <= :end";
-                $params[':end'] = $end;
-            }
-            $dateConditionAtt = implode(' AND ', $conditions);
-            $dateConditionLeave = implode(' AND ', $leaveConditions);
+        if (!$startObj || $startObj->format('Y-m-d') !== $start) {
+            $startObj = new DateTime(date('Y-m-d'));
+        }
+        if (!$endObj || $endObj->format('Y-m-d') !== $end) {
+            $endObj = clone $startObj;
         }
 
-        // $sql = "SELECT em.emp_id, em.emp_no, em.emp_name_th, em.emp_sname_th,
-        //            att.att_id, att.work_date, att.check_in, att.check_out,
-        //            tl.leave_id, tl.leave_date, tl.leave_type_id,
-        //            lt.leave_type_name, rt.start_time
-        //     FROM employees em
-        //     LEFT JOIN attendance att
-        //         ON em.emp_id = att.emp_id AND $dateConditionAtt
-        //     LEFT JOIN time_leave tl
-        //         ON em.emp_id = tl.emp_id AND $dateConditionLeave
-        //     LEFT JOIN leave_types lt
-        //         ON tl.leave_type_id = lt.leave_type_id
-        //     LEFT JOIN rfid_tag rt
-        //         ON em.emp_id = rt.emp_id
-        //     WHERE em.emp_cancel = 1";
+        // end < start → สลับ
+        if ($endObj < $startObj) {
+            [$startObj, $endObj] = [$endObj, $startObj];
+        }
 
-        $sql = "WITH RECURSIVE date_range AS (
-                    SELECT :start AS d
-                    UNION ALL
-                    SELECT d + INTERVAL 1 DAY FROM date_range WHERE d < :end
-                )
-                SELECT em.emp_id, em.emp_no, em.emp_name_th, em.emp_sname_th,
+        // จำกัดช่วงสูงสุด 366 วัน กัน query ใหญ่เกิน
+        $maxEnd = (clone $startObj)->modify('+365 day');
+        if ($endObj > $maxEnd) {
+            $endObj = $maxEnd;
+        }
+
+        // สร้างรายการวันที่ แทน WITH RECURSIVE
+        $params = [];
+        $parts  = [];
+        $cur    = clone $startObj;
+        $i      = 0;
+
+        while ($cur <= $endObj) {
+            $key = ":d{$i}";
+            $parts[] = ($i === 0) ? "SELECT {$key} AS d" : "SELECT {$key}";
+            $params[$key] = $cur->format('Y-m-d');
+            $cur->modify('+1 day');
+            $i++;
+        }
+
+        $dateRangeSql = implode(' UNION ALL ', $parts);
+
+        $sql = "SELECT em.emp_id, em.emp_no, em.emp_name_th, em.emp_sname_th,
                        dr.d AS work_date,
                        att.att_id, att.check_in, att.check_out,
                        tl.leave_id, tl.leave_date, tl.leave_type_id,
                        lt.leave_type_name, rt.start_time
-                FROM date_range dr
+                FROM ($dateRangeSql) AS dr
                 CROSS JOIN employees em
                 LEFT JOIN attendance att
                     ON att.emp_id = em.emp_id AND att.work_date = dr.d
@@ -119,13 +113,12 @@ class Attendance
                     ON em.emp_id = rt.emp_id
                 WHERE em.emp_cancel = 1";
 
-
         if ($selectId !== '') {
             $sql .= " AND em.emp_id = :emp_id";
             $params[':emp_id'] = $selectId;
         }
 
-        $sql .= " ORDER BY em.emp_no ASC";
+        $sql .= " ORDER BY dr.d ASC, em.emp_no ASC";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute($params);
