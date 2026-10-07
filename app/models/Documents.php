@@ -101,36 +101,6 @@ class Document
         return false;
     }
 
-    // เอกสารที่รออนุมัติ พร้อมชื่อพนักงานและประเภท (admin dashboard)
-    public static function recentPending($limit = 5)
-    {
-        $conn = Database::connect();
-
-        $sql = "SELECT d.doc_id, d.doc_name, d.created_at, dt.type_name,
-                       e.emp_name_th, e.emp_sname_th
-                FROM documents d
-                LEFT JOIN document_type dt ON dt.type_id = d.type_id
-                JOIN employees e ON e.emp_id = d.emp_id
-                WHERE d.doc_status = 'pending'
-                ORDER BY d.created_at DESC
-                LIMIT " . (int) $limit;
-
-        $stmt = $conn->prepare($sql);
-        $stmt->execute();
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public static function countPending()
-    {
-        $conn = Database::connect();
-
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM documents WHERE doc_status = 'pending'");
-        $stmt->execute();
-
-        return (int) $stmt->fetchColumn();
-    }
-
     // ใช้เฉพาะฝั่ง staff — เห็นแค่เอกสารที่ผ่านการอนุมัติแล้วเท่านั้น
     public static function approvedByEmployee($empId)
     {
